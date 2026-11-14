@@ -1,0 +1,40 @@
+name: Daily Portfolio Maintenance
+
+on:
+  schedule:
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  daily-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate daily maintenance log
+        run: |
+          mkdir -p maintenance
+          DATE=$(date -u +%Y-%m-%d)
+
+          echo "# Portfolio Maintenance - $DATE" > maintenance/daily-log.md
+          echo "" >> maintenance/daily-log.md
+          echo "- Automated maintenance workflow executed." >> maintenance/daily-log.md
+          echo "- Repository maintenance check completed." >> maintenance/daily-log.md
+          echo "- Date: $DATE" >> maintenance/daily-log.md
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add maintenance/daily-log.md
+
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: daily portfolio maintenance"
+            git push
+          fi
